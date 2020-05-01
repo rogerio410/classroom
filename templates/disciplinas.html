@@ -1,16 +1,29 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h3>Minhas disciplinas</h3>
     <p>
-        <a href="/disciplina">Nova Disciplina</a>
-        <a href="/disciplinas_lote">Criar em Lote</a>
+        <a href="/disciplina" class="btn btn-primary">Nova Disciplina</a>
+        <a href="/disciplinas_lote" class="btn btn-secondary">Criar em Lote</a>
     </p>
-    <ol>
-        {% for disciplina in disciplinas %}
-                <li>{{ disciplina.name }} - {{ disciplina.section }} ({{disciplina.courseState}})</li>
-        {% endfor %}
-    </ol>
+    <table class="table">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">nome</th>
+                <th scope="col">curso/turma/semestre/campus</th>
+                <th scope="col">status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for disciplina in disciplinas %}
+                <tr>
+                    <td>{{ disciplina.name }}</td>
+                    <td>{{ disciplina.section }} </td>
+                    <td>{{disciplina.courseState}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+        
 {% endblock %}
 
 

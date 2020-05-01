@@ -2,12 +2,16 @@
 {% block content %}
 
     <form action="/disciplinas_lote" method="post" enctype="multipart/form-data">
+        <div class="form-groupd">
+            <label for="nome">Arquivo de Turmas</label>
+            <input type="file" name="file" />
+            <small class="form-text text-muted">
+                Verifique o formado correto dos dados
+            </small>
+        </div>
 
-        <label for="nome">Arquivo: </label>
-        <input type="file" name="file" />
-
-        <input type="submit" value="Criar Turma Classroom" >
-        <a href="/disciplinas">Lista de Disciplinas</a>
+        <input class="btn btn-info" type="submit" value="Criar Turma Classroom" >
+        <a class="btn btn-light" href="/disciplinas">Lista de Disciplinas</a>
         
     </form>
 {% endblock %}

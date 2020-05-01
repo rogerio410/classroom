@@ -2,28 +2,40 @@
 {% block content %}
 
     <form action="/disciplina" method="post">
+        <div class="form-group">
+            <label for="nome">Nome: </label>
+            <input class="form-control" type="text" name="nome" required/>
+        </div>
 
-        <label for="nome">Nome: </label>
-        <input type="text" name="nome" />
+        <div class="form-group">
+            <label for="nome">Curso: </label>
+            <input class="form-control" type="text" name="curso" placeholder="Sigla Curso" minlength="6" required/>
+        </div>
 
-        <label for="nome">Curso: </label>
-        <input type="text" name="curso" placeholder="Sigla Curso" minlength="6" />
+        <div class="form-group">
+            <label for="nome">Turma: </label>
+            <input class="form-control" type="text" name="turma" placeholder="ex.: 166 ou III" required/>
+        </div>
 
-        <label for="nome">Turma: </label>
-        <input type="text" name="turma" placeholder="ex.: 166 ou III"/>
+        <div class="form-group">
+            <label for="nome">Dept: </label>
+            <input class="form-control" type="text" name="dept" placeholder="ex.: DIASPA"/>
+        </div>
 
-        <label for="nome">Dept: </label>
-        <input type="text" name="dept" placeholder="ex.: DIASPA"/>
+        <div class="form-group">
+            <label for="nome">Campus: </label>
+            <input class="form-control" type="text" name="campus" placeholder="ex.: CATCE ou CAPIR" required/>
+        </div>
 
-        <label for="nome">Campus: </label>
-        <input type="text" name="campus" placeholder="ex.: CATCE ou CAPIR"/>
+        <div class="form-group">
+            <label for="nome">Ano/Semestre: </label>
+            <input class="form-control" type="text" name="ano_semestre" placeholder="2020 ou 2020.1" required/>
+        </div>
 
-        <label for="nome">Ano/Semestre: </label>
-        <input type="text" name="ano_semestre" placeholder="2020 ou 2020.1"/>
+        <input class="btn btn-info" type="submit" value="Criar Turma Classroom" >
         
-        <input type="submit" value="Criar Turma Classroom" >
-        <a href="/disciplinas">Lista de Disciplinas</a>
-        <a href="/disciplinas_lote">Criar em Lote</a>
+        <a class="btn btn-light" href="/disciplinas" >Lista de Disciplinas</a>
+        <a class="btn btn-light" href="/disciplinas_lote">Criar em Lote</a>
         
     </form>
 {% endblock %}
