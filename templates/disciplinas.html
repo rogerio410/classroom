@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h3>Minhas disciplinas</h3>
+    <p>
+        <a href="/disciplina">Nova Disciplina</a>
+        <a href="/disciplinas_lote">Criar em Lote</a>
+    </p>
+    <ol>
+        {% for disciplina in disciplinas %}
+                <li>{{ disciplina.name }} - {{ disciplina.section }} ({{disciplina.courseState}})</li>
+        {% endfor %}
+    </ol>
+{% endblock %}
+
+

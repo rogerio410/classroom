@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <form action="/disciplina" method="post">
+
+        <label for="nome">Nome: </label>
+        <input type="text" name="nome" />
+
+        <label for="nome">Curso: </label>
+        <input type="text" name="curso" placeholder="Sigla Curso" minlength="6" />
+
+        <label for="nome">Turma: </label>
+        <input type="text" name="turma" placeholder="ex.: 166 ou III"/>
+
+        <label for="nome">Dept: </label>
+        <input type="text" name="dept" placeholder="ex.: DIASPA"/>
+
+        <label for="nome">Campus: </label>
+        <input type="text" name="campus" placeholder="ex.: CATCE ou CAPIR"/>
+
+        <label for="nome">Ano/Semestre: </label>
+        <input type="text" name="ano_semestre" placeholder="2020 ou 2020.1"/>
+        
+        <input type="submit" value="Criar Turma Classroom" >
+        <a href="/disciplinas">Lista de Disciplinas</a>
+        <a href="/disciplinas_lote">Criar em Lote</a>
+        
+    </form>
+{% endblock %}
+
+

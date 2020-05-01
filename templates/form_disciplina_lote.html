@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <form action="/disciplinas_lote" method="post" enctype="multipart/form-data">
+
+        <label for="nome">Arquivo: </label>
+        <input type="file" name="file" />
+
+        <input type="submit" value="Criar Turma Classroom" >
+        <a href="/disciplinas">Lista de Disciplinas</a>
+        
+    </form>
+{% endblock %}
+
+
