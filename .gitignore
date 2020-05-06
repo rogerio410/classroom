@@ -196,3 +196,5 @@ __pycache__/
 token.pickle
 credentials.json
 
+log/
+

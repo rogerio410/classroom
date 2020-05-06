@@ -8,17 +8,25 @@
     <table class="table">
         <thead class="thead-light">
             <tr>
+                <th scope="col">#</th>
                 <th scope="col">nome</th>
                 <th scope="col">curso/turma/semestre/campus</th>
+                <th scope="col">Cód. Acesso</th>
                 <th scope="col">status</th>
+                <th scope="col">Operações</th>
             </tr>
         </thead>
         <tbody>
             {% for disciplina in disciplinas %}
                 <tr>
+                    <td>{{ loop.index }}</td>
                     <td>{{ disciplina.name }}</td>
                     <td>{{ disciplina.section }} </td>
+                    <td>{{ disciplina.enrollmentCode }}</td>
                     <td>{{disciplina.courseState}}</td>
+                    <td>
+                        <a href="/disciplina/{{disciplina.id}}/arquivar">Arquivar</a>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

@@ -36,13 +36,15 @@ def obter_disciplina(service, course_id):
             raise Exception(f'Erro no classroom')
 
 
-def obter_disciplinas(service):
+def obter_disciplinas(service, professor='me'):
     courses = []
     page_token = None
 
     while True:
         response = service.courses().list(pageToken=page_token,
-                                          pageSize=100).execute()
+                                          pageSize=100,
+                                          #   teacherId=professor
+                                          ).execute()
         courses.extend(response.get('courses', []))
         page_token = response.get('nextPageToken', None)
         if not page_token:
@@ -51,27 +53,90 @@ def obter_disciplinas(service):
     return courses
 
 
-def criar_disciplinas_lote(service, disciplinas):
+def criar_disciplina_com_objeto(service, course):
+    course = service.courses().create(body=course).execute()
+    return course
 
-    def callback(request_id, response, exception):
-        if exception is not None:
-            print(
-                f'Error adding course "{request_id}" to\
-                the course course: {exception}')
-        else:
-            print(f'Course "{request_id}" criado')
 
-    batch = service.new_batch_http_request(callback=callback)
+def criar_disciplinas_lote_one_by_one(service, disciplinas,
+                                      disciplinas_criadas,
+                                      disciplinas_nao_criadas):
 
     for d in disciplinas:
-        nome, curso, turma, ano_periodo, dept, campus, professor = d
+        campus, dept, curso, nome, turma, ano_periodo, professor = d
         course = {
             'name': nome,
             'section': f'{curso} - {turma} - {ano_periodo}/{dept}/{campus} ',
             'descriptionHeading': '',
             'description': """ IFPI - Atividades Remotas """,
-            'room': f'{dept} @ {campus}',
+            'room': f'{dept}#{campus}#ifpi#remote#20201',
+            # 'ownerId': 'me',
+            # 'ownerId': 'emailinexistente.ok@ifpi.edu.br',
             'ownerId': professor,
+            'courseState': 'ACTIVE'
+        }
+
+        try:
+            c = criar_disciplina_com_objeto(service, course)
+            disciplinas_criadas.append(c)
+        except errors.HttpError as e:
+            error = simplejson.loads(e.content).get('error')
+            course['error'] = f"Erro ao criar: {error['code']} - {error['message']}"
+            disciplinas_nao_criadas.append(course)
+        except Exception as e:
+            course['error'] = e
+            disciplinas_nao_criadas.append(course)
+
+
+def criar_disciplinas_lote(service, disciplinas):
+
+    disciplinas_criadas = []
+
+    def callback(request_id, response, exception):
+
+        if exception is not None:
+            print(
+                f'Error adding course "{request_id}" to\
+                the course course: {exception}')
+            error = simplejson.loads(exception.content).get('error')
+            print('Error --> ', error)
+        else:
+            ''' Response dict
+            {
+                "id":"82332516514",
+                "name":"REDAÇÃO",
+                "section":"11IMEC - 303 - 2020/DCHL/CATCE ",
+                "description":" IFPI - Atividades Remotas ",
+                "room":"DCHL#CATCE#ifpi-remote-20201",
+                "ownerId":"106866812652931243930",
+                "creationTime":"2020-05-05T12:39:42.959Z",
+                "updateTime":"2020-05-05T12:39:41.766Z",
+                "enrollmentCode":"j3qlr5p",
+                "courseState":"ACTIVE",
+                "alternateLink":"https://classroom.google.com/c/ODIzMzI1MTY1MTRa",
+                "teacherGroupEmail":"REDA_O_11IMEC_303_2020_DCHL_CATCE_teachers_facb32d2@ifpi.edu.br",
+                "courseGroupEmail":"REDA_O_11IMEC_303_2020_DCHL_CATCE_1fa95268@ifpi.edu.br",
+                "teacherFolder":{
+                    "id":"0B-1bsqJzHRrSfmNSTGh3MjZ6alQ0RDdGNzIzWlZtU3FqZkp1cHRCemJLVjd2bDNMOGJxVzQ"
+                },
+                "guardiansEnabled":False
+                }
+            '''
+            print(f'Course "{request_id}" criado')
+            disciplinas_criadas.append(response)
+
+    batch = service.new_batch_http_request(callback=callback)
+
+    for d in disciplinas:
+        campus, dept, curso, nome, turma, ano_periodo, professor = d
+        course = {
+            'name': nome,
+            'section': f'{curso} - {turma} - {ano_periodo}/{dept}/{campus} ',
+            'descriptionHeading': '',
+            'description': """ IFPI - Atividades Remotas """,
+            'room': f'{dept}#{campus}#ifpi-remote-20201',
+            'ownerId': 'me',
+            # 'ownerId': professor,
             'courseState': 'ACTIVE'
         }
 
@@ -81,6 +146,21 @@ def criar_disciplinas_lote(service, disciplinas):
 
     http = Http()
     batch.execute(http=http)
+    return disciplinas_criadas
+
+
+def arquivar_disciplina(service, disciplina_id):
+    course_id = disciplina_id
+    course = {
+        'courseState': 'ARCHIVED',
+    }
+    try:
+        course = service.courses().patch(id=course_id, updateMask='courseState',
+                                         body=course).execute()
+        return True
+    except Exception as e:
+        print('Exception: ', e)
+        return False
 
 
 def associar_professor(service, disciplina_id, email):
@@ -167,5 +247,27 @@ def convidar_professor(service, disciplina_id, email):
       ],
       "status": "PERMISSION_DENIED"
   }
+}
+'''
+
+'''
+Disciplinas 0 {
+   "id":"96337156580",
+   "name":"Téc. Info. Adm.",
+   "descriptionHeading":"Téc. Info. Adm.",
+   "room":"3o Adm 2020",
+   "ownerId":"110865431028909299594",
+   "creationTime":"2020-05-05T12:20:06.988Z",
+   "updateTime":"2020-05-05T12:20:05.952Z",
+   "enrollmentCode":"24ondx7",
+   "courseState":"ACTIVE",
+   "alternateLink":"https://classroom.google.com/c/OTYzMzcxNTY1ODBa",
+   "teacherGroupEmail":"T_c_Info_Adm_professores_71c955c1@ifpi.edu.br",
+   "courseGroupEmail":"T_c_Info_Adm_9b29fb84@ifpi.edu.br",
+   "teacherFolder":{
+      "id":"0BzFHc4gP6QXifnJoUjVxV0JESXFpOEY3VkpKWDJsWDhuUFl2am9wMmNtX2UzaGw2V0JUX28"
+   },
+   "guardiansEnabled":False,
+   "calendarId":"ifpi.edu.br_classroom77614723@group.calendar.google.com"
 }
 '''
