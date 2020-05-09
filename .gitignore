@@ -192,9 +192,11 @@ Temporary Items
 .vscode/
 __pycache__/
 
-# Google classroom api, and auth
+# Google classroom api, and auth, firestore
 token.pickle
 credentials.json
+firestore-auth.json
 
+# log debug files
 log/
 

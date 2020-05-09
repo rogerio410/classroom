@@ -7,16 +7,16 @@ from httplib2 import Http
 
 def criar_disciplina(service, nome, curso,
                      turma, ano_periodo,
-                     dept, campus, professor='me'):
+                     dept, campus, professor='me', status='ACTIVE',
+                     descricao='IFPI - Atividades Remotas'):
     course = {
         'name': nome,
         'section': f'{curso} - {turma} - {ano_periodo}/{dept}/{campus} ',
         'descriptionHeading': '',
-        'description': """ IFPI - Atividades Remotas """,
+        'description': descricao,
         'room': f'{dept} @ {campus}',
         'ownerId': professor,
-        'courseState': 'ACTIVE'
-    }
+        'courseState': status}
 
     course = service.courses().create(body=course).execute()
     return course

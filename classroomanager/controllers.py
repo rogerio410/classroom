@@ -1,23 +1,56 @@
 from datetime import datetime
-from classroom_utils import get_classroom_service, StatusTurma
+from .classroom_utils import get_classroom_service, StatusTurma
+from .firestore_utils import get_firestore_client
 from googleapiclient import errors, http
 import simplejson
-from classroom_operacoes import criar_disciplina, obter_disciplina, \
-    obter_disciplinas, convidar_professor, associar_aluno, \
-    criar_disciplinas_lote, arquivar_disciplina, criar_disciplinas_lote_one_by_one
-from flask import Flask, render_template, request, redirect, flash
+from .classroom_operacoes import criar_disciplina, obter_disciplina, \
+    obter_disciplinas, convidar_professor, associar_professor, associar_aluno, \
+    criar_disciplinas_lote, arquivar_disciplina, \
+    criar_disciplinas_lote_one_by_one
+from flask import render_template, request, redirect, flash
+from classroomanager import app
 
-
-app = Flask(__name__)
-
-app.secret_key = 'HELLO-BATMAN...'
-
-# on terminal:
-# export FLASK_APP=app.py
-# export FLASK_ENV=development
-# flask run
+# app is created on __init__.py
 
 service = get_classroom_service()
+firestore = get_firestore_client()
+
+
+@app.route('/sync_all')
+def sync_all_to_firestore():
+    course = {}
+    course['nome'] = 'Algoritmos II'
+    course['campus'] = 'CATCE'
+
+    # firestore.collection('courses').document().set(course)
+    disciplinas = obter_disciplinas_ativas()
+    linhas = ''
+    erros = ''
+    for d in disciplinas:
+        nome = d['name']
+        section = d['section']
+        sala = d['room']
+
+        try:
+            curso, turma, *_ = section.split('-')
+        except Exception:
+            curso = section
+            turma = section
+
+        try:
+            flag = ' '
+            if '#' in sala:
+                flag = '#'
+            elif '-' in sala:
+                flash = '-'
+
+            dept, campus, *_ = sala.split(flag)
+
+            linhas += f'{nome};{curso};{turma};{dept};{campus}\n'
+        except Exception:
+            erros += f'{nome};{section};{sala}\n'
+        resultado = 'DISCIPLINAS:\n'+linhas+'\nERROS:\n'+erros
+    return resultado
 
 
 @app.route('/disciplina', methods=['POST', 'GET'])
@@ -76,31 +109,14 @@ def disciplina_lote():
 
 @app.route('/disciplinas')
 def disciplinas():
-    disciplinas = obter_disciplinas(service)
-    # somente ATIVAS
-    disciplinas = filter(lambda d: d['courseState'] in [StatusTurma.ACTIVE.value],
-                         disciplinas)
 
-    # somente do IFPI - Remote
-    def is_ifpi_remote(d):
-        sala = d.get('room') or ''
-        return 'remote' in sala
+    lista_disciplinas_remotas = obter_disciplinas_ativas()
 
-    disciplinas = filter(is_ifpi_remote, disciplinas)
-
-    def order_by_tudo(d):
-        nome = d.get('name')
-        detalhes = d.get('section')
-        curso, turma, outros = detalhes.split(' - ')
-        ano_periodo, dept, campus = outros.split('/')
-        return campus+dept+curso+turma+nome
-
-    disciplinas = sorted(disciplinas, key=order_by_tudo)
     # to csv
-    salvar_em_arquivo(disciplinas)
+    # salvar_em_arquivo(disciplinas)
 
     # print('Disciplinas 0', disciplinas[0])
-    return render_template('disciplinas.html', disciplinas=disciplinas)
+    return render_template('disciplinas.html', disciplinas=lista_disciplinas_remotas)
 
 
 @app.route('/disciplina/<int:id>/arquivar')
@@ -110,6 +126,16 @@ def arquivar_disciplina_req(id):
     else:
         flash('Não foi possível arquivar!')
     return redirect('/disciplinas')
+
+
+@app.route('/disciplina/<int:id>/associar_professor/<email>')
+def associar_professor_req(id, email):
+    if associar_professor(service, id, email):
+        flash('Disciplina arquivada com sucesso!')
+        return 'Professor associado'
+    else:
+        flash('Não foi possível arquivar!')
+        return 'Não foi possível associar'
 
 
 def extrair_da_request(request):
@@ -138,16 +164,19 @@ def salvar_em_arquivo(disciplinas):
     arquivo = open(nome, 'w')
 
     for d in disciplinas:
-        section = d['section']
-        dados1 = section.split('/')
-        campus = dados1[-1]
-        dept = dados1[-2]
-        dados2 = dados1[0].split('-')
-        curso = dados2[0]
-        turma = dados2[1]
-        linha = f"{d['name']};{campus};{dept};{curso};{turma}\
-            ;{d['enrollmentCode']}\n"
-        arquivo.write(linha)
+        try:
+            section = d['section']
+            dados1 = section.split('/')
+            campus = dados1[-1]
+            dept = dados1[-2]
+            dados2 = dados1[0].split('-')
+            curso = dados2[0]
+            turma = dados2[1]
+            linha = f"{d['name']};{campus};{dept};{curso};{turma}\
+                ;{d['enrollmentCode']}\n"
+            arquivo.write(linha)
+        except Exception as e:
+            print(f"{d['name']} - {d['section']} - {d['room']}")
 
     arquivo.close()
 
@@ -163,3 +192,33 @@ def salvar_em_arquivo_nao_criadas(disciplinas):
         arquivo.write(linha)
 
     arquivo.close()
+
+
+def obter_disciplinas_ativas():
+    disciplinas = obter_disciplinas(service)
+
+    # somente ATIVAS
+    disciplinas = filter(lambda d: d['courseState'] in [StatusTurma.ACTIVE.value],
+                         disciplinas)
+
+    # somente do IFPI - Remote
+    def is_ifpi_remote(d):
+        sala = d.get('room') or ''
+        return 'remote' in sala
+
+    disciplinas = filter(is_ifpi_remote, disciplinas)
+
+    def order_by_tudo(d):
+        nome = d.get('name')
+        section = d['section']
+        dados1 = section.split('/')
+        campus = dados1[-1]
+        # dept = dados1[-2]
+        # dados2 = dados1[0].split('-')
+        # curso = dados2[0]
+        # turma = dados2[1]
+        # return campus+dept+curso+turma+nome
+        return campus+nome
+
+    disciplinas = sorted(disciplinas, key=order_by_tudo)
+    return disciplinas
