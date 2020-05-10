@@ -1,59 +1,40 @@
 from datetime import datetime
 from .classroom_utils import get_classroom_service, StatusTurma
 from .firestore_utils import get_firestore_client
+from .login_decorator import login_required
 from googleapiclient import errors, http
 import simplejson
 from .classroom_operacoes import criar_disciplina, obter_disciplina, \
     obter_disciplinas, convidar_professor, associar_professor, associar_aluno, \
     criar_disciplinas_lote, arquivar_disciplina, \
     criar_disciplinas_lote_one_by_one
-from flask import render_template, request, redirect, flash
+from flask import render_template, request, redirect, flash, jsonify
 from classroomanager import app
 
 # app is created on __init__.py
 
-service = get_classroom_service()
-firestore = get_firestore_client()
+# service = get_classroom_service()
+# firestore = get_firestore_client()
 
 
 @app.route('/sync_all')
+@login_required
 def sync_all_to_firestore():
     course = {}
     course['nome'] = 'Algoritmos II'
     course['campus'] = 'CATCE'
 
     # firestore.collection('courses').document().set(course)
-    disciplinas = obter_disciplinas_ativas()
+    disciplinas = obter_disciplinas(
+        get_classroom_service())  # obter_disciplinas_ativas()
     linhas = ''
     erros = ''
-    for d in disciplinas:
-        nome = d['name']
-        section = d['section']
-        sala = d['room']
 
-        try:
-            curso, turma, *_ = section.split('-')
-        except Exception:
-            curso = section
-            turma = section
-
-        try:
-            flag = ' '
-            if '#' in sala:
-                flag = '#'
-            elif '-' in sala:
-                flash = '-'
-
-            dept, campus, *_ = sala.split(flag)
-
-            linhas += f'{nome};{curso};{turma};{dept};{campus}\n'
-        except Exception:
-            erros += f'{nome};{section};{sala}\n'
-        resultado = 'DISCIPLINAS:\n'+linhas+'\nERROS:\n'+erros
-    return resultado
+    return jsonify(disciplinas)
 
 
 @app.route('/disciplina', methods=['POST', 'GET'])
+@login_required
 def disciplina():
 
     if request.method == 'GET':
@@ -75,6 +56,7 @@ def disciplina():
 
 
 @app.route('/disciplinas_lote', methods=['POST', 'GET'])
+@login_required
 def disciplina_lote():
     if request.method == 'GET':
         return render_template('form_disciplina_lote.html')
@@ -108,6 +90,7 @@ def disciplina_lote():
 
 
 @app.route('/disciplinas')
+@login_required
 def disciplinas():
 
     lista_disciplinas_remotas = obter_disciplinas_ativas()
@@ -120,6 +103,7 @@ def disciplinas():
 
 
 @app.route('/disciplina/<int:id>/arquivar')
+@login_required
 def arquivar_disciplina_req(id):
     if arquivar_disciplina(service, id):
         flash('Disciplina arquivada com sucesso!')
@@ -129,6 +113,7 @@ def arquivar_disciplina_req(id):
 
 
 @app.route('/disciplina/<int:id>/associar_professor/<email>')
+@login_required
 def associar_professor_req(id, email):
     if associar_professor(service, id, email):
         flash('Disciplina arquivada com sucesso!')
@@ -195,7 +180,7 @@ def salvar_em_arquivo_nao_criadas(disciplinas):
 
 
 def obter_disciplinas_ativas():
-    disciplinas = obter_disciplinas(service)
+    disciplinas = obter_disciplinas(get_classroom_service())
 
     # somente ATIVAS
     disciplinas = filter(lambda d: d['courseState'] in [StatusTurma.ACTIVE.value],
@@ -206,7 +191,7 @@ def obter_disciplinas_ativas():
         sala = d.get('room') or ''
         return 'remote' in sala
 
-    disciplinas = filter(is_ifpi_remote, disciplinas)
+    # disciplinas = filter(is_ifpi_remote, disciplinas)
 
     def order_by_tudo(d):
         nome = d.get('name')
@@ -218,6 +203,31 @@ def obter_disciplinas_ativas():
         # curso = dados2[0]
         # turma = dados2[1]
         # return campus+dept+curso+turma+nome
+
+        # for d in disciplinas:
+        #     nome = d['name']
+        #     section = d['section']
+        #     sala = d['room']
+
+        #     try:
+        #         curso, turma, *_ = section.split('-')
+        #     except Exception:
+        #         curso = section
+        #         turma = section
+
+        #     try:
+        #         flag = ' '
+        #         if '#' in sala:
+        #             flag = '#'
+        #         elif '-' in sala:
+        #             flash = '-'
+
+        #         dept, campus, *_ = sala.split(flag)
+
+        #         linhas += f'{nome};{curso};{turma};{dept};{campus}\n'
+        #     except Exception:
+        #         erros += f'{nome};{section};{sala}\n'
+        # resultado = 'DISCIPLINAS:\n'+linhas+'\nERROS:\n'+erros
         return campus+nome
 
     disciplinas = sorted(disciplinas, key=order_by_tudo)

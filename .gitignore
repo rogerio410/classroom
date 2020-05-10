@@ -196,6 +196,7 @@ __pycache__/
 token.pickle
 credentials.json
 firestore-auth.json
+credentials_webserver.json
 
 # log debug files
 log/

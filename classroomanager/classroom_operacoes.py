@@ -25,8 +25,6 @@ def criar_disciplina(service, nome, curso,
 def obter_disciplina(service, course_id):
     try:
         course = service.courses().get(id=course_id).execute()
-        nome = course.get('name')
-        print(f'Course "{nome}" found.')
         return course
     except errors.HttpError as e:
         error = simplejson.loads(e.content).get('error')
@@ -41,10 +39,20 @@ def obter_disciplinas(service, professor='me'):
     page_token = None
 
     while True:
-        response = service.courses().list(pageToken=page_token,
-                                          pageSize=100,
-                                          #   teacherId=professor
-                                          ).execute()
+        try:
+            response = service.courses().list(pageToken=page_token,
+                                              pageSize=100,
+                                              #   teacherId=professor
+                                              ).execute()
+        except errors.HttpError as e:
+            error = simplejson.loads(e.content).get('error')
+            if(error.get('code') == 404):
+                raise Exception(f'Course with ID "{course_id}" not found.')
+            else:
+                raise Exception(f'Erro no classroom')
+        except Exception as e:
+            print('Exception', e)
+
         courses.extend(response.get('courses', []))
         page_token = response.get('nextPageToken', None)
         if not page_token:
@@ -89,7 +97,7 @@ def criar_disciplinas_lote_one_by_one(service, disciplinas,
 
 
 def criar_disciplinas_lote(service, disciplinas):
-
+    # Está dando erro ao processo 3 ou 4 requests do lote.
     disciplinas_criadas = []
 
     def callback(request_id, response, exception):
@@ -159,7 +167,6 @@ def arquivar_disciplina(service, disciplina_id):
                                          body=course).execute()
         return True
     except Exception as e:
-        print('Exception: ', e)
         return False
 
 
