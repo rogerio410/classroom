@@ -1,6 +1,4 @@
-## Classroom Manager
-
-# Gerenciador para Google Classroom
+# Classroom Manager
 
 ### Prepare Google Project
 * Create a Project on Google Cloud
