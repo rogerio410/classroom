@@ -1,1 +1,1 @@
-web: gunicorn classroomanager:classroomanager
+web: gunicorn classroomanager:app

@@ -12,3 +12,6 @@ setup(
 # export FLASK_APP=classroomanager
 # export FLASK_ENV=development
 # flask run
+
+# with gunicorn:
+# gunicorn classroomanager:app
