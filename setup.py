@@ -15,3 +15,10 @@ setup(
 
 # with gunicorn:
 # gunicorn classroomanager:app
+
+# to deploy on heroku
+# checkout to deploy
+# Merge from master to deploy
+# un-ignore crendentials.webserver.json
+# git push heroku deploy:master
+# this process save sensitive files only in deploy
