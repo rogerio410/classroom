@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <p>
-        <a href="/disciplina" class="btn btn-primary">Nova Disciplina</a>
-        <a href="/disciplinas_lote" class="btn btn-secondary">Criar em Lote</a>
-    </p>
+    <div>
+        <a href="/disciplina" class="btn btn-outline-primary">Nova Disciplina</a>
+        <a href="/disciplinas_lote" class="btn btn-outline-secondary">Criar em Lote</a>
+        <a href="/sync_all" type="button" class="btn btn-outline-success">Sync Courses</a>
+    </div>
     <table class="table">
         <thead class="thead-light">
             <tr>
@@ -21,7 +22,7 @@
             {% for disciplina in disciplinas %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td>{{ disciplina.name }}</td>
+                    <td><a href="{{ disciplina.alternateLink }}" target="_blank">{{ disciplina.name }}</a> </td>
                     <td>{{ disciplina.section }} </td>
                     <td>{{ disciplina.room }} </td>
                     <td>{{ disciplina.enrollmentCode }}</td>

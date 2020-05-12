@@ -16,10 +16,11 @@
         <header>
             <h1>Classroom Manager</h1>
             {% if session.profile %}
-                <img src="{{ session.profile.picture }}" class="rounded-circle" alt="profile image" width="25px"> 
-                {{ session.profile.name }} 
-                ({{ session.profile.email }} )
-                <a href="/logout">Sair</a>
+                    <p>
+                        <img src="{{ session.profile.picture }}" class="rounded-circle" alt="profile image" width="25px"> 
+                        {{ session.profile.name }} <a href="/logout">Logout</a><br>
+                        {{ session.profile.email }}
+                    </p>
             {% endif %}
         </header>
         
@@ -28,11 +29,9 @@
                 {{ msg|e }}
             </div>
         {% endfor %}
-        <div class="container">
             {% block content %}
                 <p>Conteúdo Principal</p>
             {% endblock %}
-        </div>
     </div>
     
     
