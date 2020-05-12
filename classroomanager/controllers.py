@@ -113,7 +113,6 @@ def disciplina_lote():
             return redirect(request.url)
         file = request.files['file']
         disciplinas = extrair_de_arquivo(file)
-        # disciplinas = criar_disciplinas_lote(service, disciplinas)
         try:
             disciplinas_criadas = []
             disciplinas_nao_criadas = []

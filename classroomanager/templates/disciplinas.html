@@ -10,25 +10,25 @@
         <thead class="thead-light">
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">nome</th>
+                <th scope="col">Name</th>
                 <th scope="col">Section</th>
                 <th scope="col">Room</th>
-                <th scope="col">Cód. Acesso</th>
-                <th scope="col">status</th>
-                <th scope="col">Operações</th>
+                <th scope="col">Code</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for disciplina in disciplinas %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td><a href="{{ disciplina.alternateLink }}" target="_blank">{{ disciplina.name }}</a> </td>
+                    <td>{{ disciplina.name }} </td>
                     <td>{{ disciplina.section }} </td>
                     <td>{{ disciplina.room }} </td>
                     <td>{{ disciplina.enrollmentCode }}</td>
                     <td>{{disciplina.courseState}}</td>
                     <td>
-                        <a href="/disciplina/{{disciplina.id}}/arquivar">Arquivar</a>
+                        <a href="{{ disciplina.alternateLink }}" target="_blank"><img src="/static/classroom.png" alt="Classroom icon" title="View on Classroom" width="24px"></a>
                     </td>
                 </tr>
             {% endfor %}

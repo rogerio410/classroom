@@ -1,1 +1,1 @@
-web: gunicorn classroomanager:app
+web: gunicorn classroomanager:app --timeout 60
