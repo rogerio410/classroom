@@ -15,6 +15,13 @@
     <div class="container-fluid">
         <header>
             <h1>Classroom Manager</h1>
+            {% if session.profile %}
+                <img src="{{ session.profile.picture }}" class="rounded-circle" alt="profile image" width="25px"> 
+                {{ session.profile.name }} 
+                ({{ session.profile.email }} )
+                <a href="/logout">Sair</a>
+            {% endif %}
+            
         </header>
         
         {% for msg in get_flashed_messages() %}

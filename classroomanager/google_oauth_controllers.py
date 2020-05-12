@@ -1,6 +1,7 @@
 # https://developers.google.com/identity/protocols/oauth2/web-server
 import flask
 import requests
+import simplejson
 from classroomanager import app
 from .classroom_operacoes import *
 import google.oauth2.credentials
@@ -20,6 +21,7 @@ API_VERSION = 'v1'
 
 @app.route('/test')
 def test_api_request():
+
     print('Rogerio da Silva')
     if 'credentials' not in flask.session:
         flask.session['next'] = '/test'
@@ -78,6 +80,7 @@ def oauth2callback():
     #              credentials in a persistent database instead.
     credentials = flow.credentials
     flask.session['credentials'] = credentials_to_dict(credentials)
+    flask.session['profile'] = _request_user_info(credentials)
     next = flask.session.get('next') or '/test'
     return flask.redirect(next)
 
@@ -85,8 +88,7 @@ def oauth2callback():
 @app.route('/revoke')
 def revoke():
     if 'credentials' not in flask.session:
-        return ('You need to <a href="/authorize">authorize</a> before ' +
-                'testing the code to revoke credentials.')
+        return flask.redirect('/')
 
     credentials = google.oauth2.credentials.Credentials(
         **flask.session['credentials'])
@@ -102,11 +104,19 @@ def revoke():
         return 'An error occurred.'
 
 
-@app.route('/clear')
+@app.route('/logout')
 def clear_credentials():
     if 'credentials' in flask.session:
         del flask.session['credentials']
-    return 'clear'
+    return flask.redirect('/')
+
+
+def _request_user_info(credentials):
+    response = requests.get('https://www.googleapis.com/oauth2/v3/userinfo',
+                            headers={'Authorization': 'Bearer ' + credentials.token},)
+
+    if response.status_code == 200:
+        return simplejson.loads(response.content.decode('utf-8'))
 
 
 def credentials_to_dict(credentials):

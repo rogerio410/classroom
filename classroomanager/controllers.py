@@ -1,14 +1,14 @@
 from datetime import datetime
 from .classroom_utils import get_classroom_service, StatusTurma
 from .firestore_utils import get_firestore_client
-from .login_decorator import login_required
+from .login_utils import login_required
 from googleapiclient import errors, http
 import simplejson
 from .classroom_operacoes import criar_disciplina, obter_disciplina, \
     obter_disciplinas, convidar_professor, associar_professor, associar_aluno, \
     criar_disciplinas_lote, arquivar_disciplina, \
     criar_disciplinas_lote_one_by_one
-from flask import render_template, request, redirect, flash, jsonify
+from flask import render_template, request, redirect, flash, jsonify, session
 from classroomanager import app
 
 # app is created on __init__.py
@@ -31,6 +31,14 @@ def sync_all_to_firestore():
     erros = ''
 
     return jsonify(disciplinas)
+
+
+@app.route('/')
+def index():
+    if 'credentials' in session:
+        return redirect('/disciplinas')
+
+    return render_template('index.html')
 
 
 @app.route('/disciplina', methods=['POST', 'GET'])
@@ -195,9 +203,12 @@ def obter_disciplinas_ativas():
 
     def order_by_tudo(d):
         nome = d.get('name')
-        section = d['section']
-        dados1 = section.split('/')
-        campus = dados1[-1]
+        try:
+            section = d['section']
+            dados1 = section.split('/')
+            campus = dados1[-1]
+        except e:
+            campus = ''
         # dept = dados1[-2]
         # dados2 = dados1[0].split('-')
         # curso = dados2[0]
