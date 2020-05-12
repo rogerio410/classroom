@@ -108,6 +108,7 @@ def revoke():
 def clear_credentials():
     if 'credentials' in flask.session:
         del flask.session['credentials']
+        del flask.session['profile']
     return flask.redirect('/')
 
 
