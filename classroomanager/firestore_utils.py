@@ -17,3 +17,7 @@ def get_firestore_client():
         )
 
     return firestore.client()
+
+
+def get_firestore_timestamp():
+    return firestore.SERVER_TIMESTAMP

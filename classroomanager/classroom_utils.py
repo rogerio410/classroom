@@ -76,7 +76,7 @@ def get_classroom_service_from_json():
     return service
 
 
-class StatusTurma(Enum):
+class CourseState(Enum):
     ACTIVE = 'ACTIVE'
     ARCHIVED = 'ARCHIVED'
     PROVISIONED = 'PROVISIONED'

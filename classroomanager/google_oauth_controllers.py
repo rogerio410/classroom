@@ -24,7 +24,7 @@ def test_api_request():
 
     print('Rogerio da Silva')
     if 'credentials' not in flask.session:
-        flask.session['next'] = '/test'
+        # flask.session['next'] = '/test'
         return flask.redirect('authorize')
 
     # Load credentials from the session.
@@ -81,7 +81,7 @@ def oauth2callback():
     credentials = flow.credentials
     flask.session['credentials'] = credentials_to_dict(credentials)
     flask.session['profile'] = _request_user_info(credentials)
-    next = flask.session.get('next') or '/test'
+    next = flask.session.get('next') or '/disciplinas'
     return flask.redirect(next)
 
 

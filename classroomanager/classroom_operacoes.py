@@ -41,7 +41,7 @@ def obter_disciplinas(service, professor='me'):
     while True:
         try:
             response = service.courses().list(pageToken=page_token,
-                                              pageSize=100,
+                                              pageSize=500,
                                               #   teacherId=professor
                                               ).execute()
         except errors.HttpError as e:

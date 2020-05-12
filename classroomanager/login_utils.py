@@ -5,7 +5,7 @@ from flask import g, request, redirect, url_for, session
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if is_loggedin():
+        if not is_loggedin():
             session['next'] = request.url
             return redirect('authorize')
         return f(*args, **kwargs)
@@ -13,4 +13,4 @@ def login_required(f):
 
 
 def is_loggedin():
-    return 'credentials' not in session
+    return 'credentials' in session

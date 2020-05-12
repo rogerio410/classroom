@@ -1,44 +1,83 @@
 from datetime import datetime
-from .classroom_utils import get_classroom_service, StatusTurma
-from .firestore_utils import get_firestore_client
-from .login_utils import login_required
+from .classroom_utils import get_classroom_service, CourseState
+from .firestore_utils import get_firestore_client, get_firestore_timestamp
+from .login_utils import login_required, is_loggedin
+from .models import Course
 from googleapiclient import errors, http
 import simplejson
-from .classroom_operacoes import criar_disciplina, obter_disciplina, \
-    obter_disciplinas, convidar_professor, associar_professor, associar_aluno, \
-    criar_disciplinas_lote, arquivar_disciplina, \
-    criar_disciplinas_lote_one_by_one
+from .classroom_operacoes import *
 from flask import render_template, request, redirect, flash, jsonify, session
 from classroomanager import app
 
 # app is created on __init__.py
 
 # service = get_classroom_service()
-# firestore = get_firestore_client()
+firestore = get_firestore_client()
 
 
 @app.route('/sync_all')
 @login_required
 def sync_all_to_firestore():
-    course = {}
-    course['nome'] = 'Algoritmos II'
-    course['campus'] = 'CATCE'
+    """
+        Data model: 
+        * classroom object + user(profile_email) + timestamp
+        * id on firestore is classroom_id-profile_email
+    """
+    profile_email = session.get('profile').get('email')
+    disciplinas = obter_disciplinas(get_classroom_service())
 
-    # firestore.collection('courses').document().set(course)
-    disciplinas = obter_disciplinas(
-        get_classroom_service())  # obter_disciplinas_ativas()
-    linhas = ''
-    erros = ''
+    # limite de 500 por request - timestamp, increment and ArrayUnion is like 1
+    PER_REQUEST = 250
+    batch_slots = len(disciplinas) // PER_REQUEST
+    if len(disciplinas) % PER_REQUEST > 0:
+        batch_slots += 1
 
-    return jsonify(disciplinas)
+    for i in range(batch_slots):
+        batch = firestore.batch()
+        start = i * PER_REQUEST
+        end = start + PER_REQUEST
+        for disc in disciplinas[start:end]:
+            id = f"{disc['id']}-{profile_email}"
+            disc['user'] = profile_email
+            disc['timestamp'] = get_firestore_timestamp()
+
+            ref = firestore.collection('courses').document(id)
+            batch.set(ref, disc)
+
+        batch.commit()
+
+    flash(f'{len(disciplinas)} Courses synchronized successfully!')
+
+    return redirect('/disciplinas')
 
 
 @app.route('/')
 def index():
-    if 'credentials' in session:
+    if is_loggedin:
         return redirect('/disciplinas')
 
     return render_template('index.html')
+
+
+@app.route('/disciplinas')
+@login_required
+def disciplinas():
+
+    # TODO: create a Repository to encapsulate query like this
+    profile_email = session.get('profile').get('email')
+    courses_ref = firestore.collection('courses')
+
+    courses_ref = courses_ref.where('user', '==', profile_email)
+    courses_ref = courses_ref.where(
+        'courseState', '==', CourseState.ACTIVE.value)
+
+    docs = courses_ref.stream()
+
+    lista = []
+    for doc in docs:
+        lista.append(doc.to_dict())
+
+    return render_template('disciplinas.html', disciplinas=lista)
 
 
 @app.route('/disciplina', methods=['POST', 'GET'])
@@ -95,19 +134,6 @@ def disciplina_lote():
             flash(f'ATENÇÃO: Algumas disciplinas não foram criadas!')
 
         return redirect('/disciplinas')
-
-
-@app.route('/disciplinas')
-@login_required
-def disciplinas():
-
-    lista_disciplinas_remotas = obter_disciplinas_ativas()
-
-    # to csv
-    # salvar_em_arquivo(disciplinas)
-
-    # print('Disciplinas 0', disciplinas[0])
-    return render_template('disciplinas.html', disciplinas=lista_disciplinas_remotas)
 
 
 @app.route('/disciplina/<int:id>/arquivar')
@@ -191,7 +217,7 @@ def obter_disciplinas_ativas():
     disciplinas = obter_disciplinas(get_classroom_service())
 
     # somente ATIVAS
-    disciplinas = filter(lambda d: d['courseState'] in [StatusTurma.ACTIVE.value],
+    disciplinas = filter(lambda d: d['courseState'] in [CourseState.ACTIVE.value],
                          disciplinas)
 
     # somente do IFPI - Remote
