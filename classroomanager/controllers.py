@@ -207,7 +207,7 @@ def obter_disciplinas_ativas():
             section = d['section']
             dados1 = section.split('/')
             campus = dados1[-1]
-        except e:
+        except Exception as e:
             campus = ''
         # dept = dados1[-2]
         # dados2 = dados1[0].split('-')
