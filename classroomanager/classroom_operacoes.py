@@ -1,6 +1,7 @@
 import simplejson
 from googleapiclient import errors
 from httplib2 import Http
+from .classroom_utils import CourseState
 # https://developers.google.com/resources/api-libraries/documentation/classroom/v1/python/latest/classroom_v1.courses.html
 # https://developers.google.com/classroom/guides/batch
 
@@ -42,7 +43,9 @@ def obter_disciplinas(service, professor='me'):
         try:
             response = service.courses().list(pageToken=page_token,
                                               pageSize=500,
-                                              #   teacherId=professor
+                                              courseStates=[
+                                                  CourseState.ACTIVE.value, ],
+                                              # teacherId=professor
                                               ).execute()
         except errors.HttpError as e:
             error = simplejson.loads(e.content).get('error')

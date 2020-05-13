@@ -44,18 +44,18 @@ def sync_all_to_firestore():
             ref = firestore.collection('courses').document(id)
             batch.set(ref, disc)
 
-        batch.commit()
-
-    flash(f'{len(disciplinas)} Courses synchronized successfully!')
+        try:
+            batch.commit()
+            flash(f'{len(disciplinas)} Courses synchronized successfully!')
+        except Exception as e:
+            flash(f'Erro ao sincronizar: {e}!')
 
     return redirect('/disciplinas')
 
 
 @app.route('/')
+@login_required
 def index():
-    if is_loggedin:
-        return redirect('/disciplinas')
-
     return render_template('index.html')
 
 

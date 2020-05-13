@@ -104,6 +104,11 @@ def revoke():
         return 'An error occurred.'
 
 
+@app.route('/login')
+def login():
+    return flask.render_template('login.html')
+
+
 @app.route('/logout')
 def clear_credentials():
     if 'credentials' in flask.session:
