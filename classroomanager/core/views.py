@@ -1,21 +1,26 @@
 from datetime import datetime
 from .classroom_utils import get_classroom_service, CourseState
 from .firestore_utils import get_firestore_client, get_firestore_timestamp
-from .auth.login_utils import login_required, is_loggedin
+from classroomanager.auth.login_utils import login_required, is_loggedin
 from .models import Course
 from googleapiclient import errors, http
 import simplejson
 from .classroom_operacoes import *
-from flask import render_template, request, redirect, flash, jsonify, session
-from classroomanager import app
+from flask import (render_template, request,
+                   redirect, flash, jsonify,
+                   session, Blueprint, url_for)
 
 # app is created on __init__.py
+core = Blueprint('core', __name__,
+                 url_prefix='/core',
+                 template_folder='templates',
+                 static_folder='static')
 
 # service = get_classroom_service()
 firestore = get_firestore_client()
 
 
-@app.route('/sync_all')
+@core.route('/sync_all')
 @login_required
 def sync_all_to_firestore():
     """
@@ -50,16 +55,10 @@ def sync_all_to_firestore():
         except Exception as e:
             flash(f'Erro ao sincronizar: {e}!')
 
-    return redirect('/disciplinas')
+    return redirect(url_for('.disciplinas'))
 
 
-@app.route('/')
-@login_required
-def index():
-    return render_template('index.html')
-
-
-@app.route('/disciplinas')
+@core.route('/disciplinas')
 @login_required
 def disciplinas():
 
@@ -80,7 +79,7 @@ def disciplinas():
     return render_template('disciplinas.html', disciplinas=lista)
 
 
-@app.route('/disciplina', methods=['POST', 'GET'])
+@core.route('/disciplina', methods=['POST', 'GET'])
 @login_required
 def disciplina():
 
@@ -99,12 +98,12 @@ def disciplina():
             error = simplejson.loads(e.content).get('error')
             show_error(error)
             flash(f'Error: {error.get("code")} - {error.get("message")}')
-        return redirect('/disciplinas')
+        return redirect(url_for('.index'))
 
 
-@app.route('/disciplinas_lote', methods=['POST', 'GET'])
+@core.route('/disciplinas_lote', methods=['POST', 'GET'])
 @login_required
-def disciplina_lote():
+def disciplinas_lote():
     if request.method == 'GET':
         return render_template('form_disciplina_lote.html')
     else:
@@ -132,28 +131,27 @@ def disciplina_lote():
             salvar_em_arquivo_nao_criadas(disciplinas_nao_criadas)
             flash(f'ATENÇÃO: Algumas disciplinas não foram criadas!')
 
-        return redirect('/disciplinas')
+        return redirect(url_for('index'))
 
 
-@app.route('/disciplina/<int:id>/arquivar')
+@core.route('/disciplina/<int:id>/arquivar')
 @login_required
 def arquivar_disciplina_req(id):
     if arquivar_disciplina(service, id):
         flash('Disciplina arquivada com sucesso!')
     else:
         flash('Não foi possível arquivar!')
-    return redirect('/disciplinas')
+    return redirect(url_for('index'))
 
 
-@app.route('/disciplina/<int:id>/associar_professor/<email>')
+@core.route('/disciplina/<int:id>/associar_professor/<email>')
 @login_required
 def associar_professor_req(id, email):
     if associar_professor(service, id, email):
         flash('Disciplina arquivada com sucesso!')
-        return 'Professor associado'
     else:
         flash('Não foi possível arquivar!')
-        return 'Não foi possível associar'
+    return redirect(url_for('index'))
 
 
 def extrair_da_request(request):

@@ -2,7 +2,7 @@
 import flask
 import requests
 import simplejson
-from classroomanager.classroom_operacoes import *
+from classroomanager.core.classroom_operacoes import *
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient
@@ -17,8 +17,7 @@ SCOPES = [
 API_SERVICE_NAME = 'classroom'
 API_VERSION = 'v1'
 
-auth = flask.Blueprint('auth',
-                       __name__,
+auth = flask.Blueprint('auth', __name__,
                        url_prefix='/auth',
                        template_folder='templates',
                        static_folder='static')

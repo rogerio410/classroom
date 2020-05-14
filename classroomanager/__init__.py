@@ -4,6 +4,7 @@
 import os
 from flask import Flask
 from classroomanager.auth.views import auth
+from classroomanager.core.views import core
 
 app = Flask(__name__)
 
@@ -14,9 +15,10 @@ def setup():
 
     # Register module (blueprints)
     app.register_blueprint(auth)
+    app.register_blueprint(core)
 
-    # Save by 'Save without Formating'
-    import classroomanager.controllers
+    # import view out a blueprint
+    import classroomanager.views
 
     #  When running locally, disable OAuthlib's HTTPs verification.
     # ACTION ITEM for developers:
