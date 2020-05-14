@@ -1,7 +1,11 @@
-# Ahttps: // flask.palletsprojects.com/en/1.1.x/patterns/packages/
+# https: // flask.palletsprojects.com/en/1.1.x/patterns/packages/
+# https://flask.palletsprojects.com/en/1.1.x/blueprints/#
 
 import os
 from flask import Flask
+from classroomanager.auth.views import auth
+from classroomanager.core.views import core
+
 app = Flask(__name__)
 
 app.secret_key = 'AS<MNAS$##$#)---'
@@ -9,9 +13,12 @@ app.secret_key = 'AS<MNAS$##$#)---'
 
 def setup():
 
-    # Save by 'Save without Formating'
-    import classroomanager.controllers
-    import classroomanager.google_oauth_controllers
+    # Register module (blueprints)
+    app.register_blueprint(auth)
+    app.register_blueprint(core)
+
+    # import view out a blueprint
+    import classroomanager.views
 
     #  When running locally, disable OAuthlib's HTTPs verification.
     # ACTION ITEM for developers:
