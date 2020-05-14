@@ -2,8 +2,7 @@
 import flask
 import requests
 import simplejson
-from classroomanager import app
-from .classroom_operacoes import *
+from classroomanager.classroom_operacoes import *
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient
@@ -18,8 +17,11 @@ SCOPES = [
 API_SERVICE_NAME = 'classroom'
 API_VERSION = 'v1'
 
+auth = flask.Blueprint('auth', __name__, url_prefix='/auth',
+                       template_folder='templates')
 
-@app.route('/test')
+
+@auth.route('/test')
 def test_api_request():
 
     print('Rogerio da Silva')
@@ -44,12 +46,12 @@ def test_api_request():
     return flask.jsonify(disciplinas)
 
 
-@app.route('/authorize')
+@auth.route('/authorize')
 def authorize():
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE, scopes=SCOPES)
 
-    flow.redirect_uri = flask.url_for('oauth2callback', _external=True)
+    flow.redirect_uri = flask.url_for('.oauth2callback', _external=True)
 
     authorization_url, state = flow.authorization_url(
         access_type='offline',
@@ -61,7 +63,7 @@ def authorize():
     return flask.redirect(authorization_url)
 
 
-@app.route('/oauth2callback')
+@auth.route('/oauth2callback')
 def oauth2callback():
     # Specify the state when creating the flow in the callback so that it can
     # verified in the authorization server response.
@@ -69,7 +71,7 @@ def oauth2callback():
 
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
-    flow.redirect_uri = flask.url_for('oauth2callback', _external=True)
+    flow.redirect_uri = flask.url_for('.oauth2callback', _external=True)
 
     # Use the authorization server's response to fetch the OAuth 2.0 tokens.
     authorization_response = flask.request.url
@@ -85,7 +87,7 @@ def oauth2callback():
     return flask.redirect(next)
 
 
-@app.route('/revoke')
+@auth.route('/revoke')
 def revoke():
     if 'credentials' not in flask.session:
         return flask.redirect('/')
@@ -99,18 +101,19 @@ def revoke():
 
     status_code = getattr(revoke, 'status_code')
     if status_code == 200:
-        return 'Credentials successfully revoked.'
+        flask.flash('Credentials successfully revoked.')
+        return flask.redirect('/')
     else:
         return 'An error occurred.'
 
 
-@app.route('/login')
+@auth.route('/login')
 def login():
     return flask.render_template('login.html')
 
 
-@app.route('/logout')
-def clear_credentials():
+@auth.route('/logout')
+def logout():
     if 'credentials' in flask.session:
         del flask.session['credentials']
         del flask.session['profile']

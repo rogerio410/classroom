@@ -7,7 +7,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if not is_loggedin():
             session['next'] = request.url
-            return redirect('/login')
+            return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
 
     return decorated_function

@@ -1,7 +1,7 @@
 from datetime import datetime
 from .classroom_utils import get_classroom_service, CourseState
 from .firestore_utils import get_firestore_client, get_firestore_timestamp
-from .login_utils import login_required, is_loggedin
+from .auth.login_utils import login_required, is_loggedin
 from .models import Course
 from googleapiclient import errors, http
 import simplejson

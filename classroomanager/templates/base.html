@@ -18,7 +18,7 @@
             {% if session.profile %}
                     <p>
                         <img src="{{ session.profile.picture }}" class="rounded-circle" alt="profile image" width="25px"> 
-                        {{ session.profile.name }} <a href="/logout">Logout</a><br>
+                        {{ session.profile.name }} <a href="{{ url_for('auth.logout') }}">Logout</a><br>
                         {{ session.profile.email }}
                     </p>
             {% endif %}
