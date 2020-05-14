@@ -17,8 +17,11 @@ SCOPES = [
 API_SERVICE_NAME = 'classroom'
 API_VERSION = 'v1'
 
-auth = flask.Blueprint('auth', __name__, url_prefix='/auth',
-                       template_folder='templates')
+auth = flask.Blueprint('auth',
+                       __name__,
+                       url_prefix='/auth',
+                       template_folder='templates',
+                       static_folder='static')
 
 
 @auth.route('/test')
@@ -51,7 +54,7 @@ def authorize():
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE, scopes=SCOPES)
 
-    flow.redirect_uri = flask.url_for('.oauth2callback', _external=True)
+    flow.redirect_uri = flask.url_for('auth.oauth2callback', _external=True)
 
     authorization_url, state = flow.authorization_url(
         access_type='offline',
@@ -71,7 +74,7 @@ def oauth2callback():
 
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
-    flow.redirect_uri = flask.url_for('.oauth2callback', _external=True)
+    flow.redirect_uri = flask.url_for('auth.oauth2callback', _external=True)
 
     # Use the authorization server's response to fetch the OAuth 2.0 tokens.
     authorization_response = flask.request.url

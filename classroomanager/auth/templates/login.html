@@ -2,8 +2,8 @@
 
 {% block content %}
     <div id="google-signin-button" >
-        <a href="{{ url_for('.authorize') }}" class="btn btn-light">
-            <img src="/static/google_g.png" width="20px" alt=""> Login with Google
+        <a href="{{ url_for('auth.authorize') }}" class="btn btn-light">
+            <img src="{{ url_for('auth.static', filename='google_g.png') }}" width="20px" alt=""> Login with Google
         </a>
     </div>
 {% endblock %}
