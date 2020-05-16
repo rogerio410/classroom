@@ -85,7 +85,7 @@ def oauth2callback():
     credentials = flow.credentials
     flask.session['credentials'] = credentials_to_dict(credentials)
     flask.session['profile'] = _request_user_info(credentials)
-    next = flask.session.get('next') or '/disciplinas'
+    next = flask.session.get('next') or flask.url_for('index')
     return flask.redirect(next)
 
 

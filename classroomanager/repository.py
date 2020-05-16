@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from .core.firestore_utils import get_firestore_client, get_firestore_timestamp
 from .core.classroom_operacoes import CourseState
+from .core.models import Course
 import flask
 
 
@@ -37,7 +38,8 @@ class FirestoreRepository(AbstractRepository):
             self._collection_ref = self._collection_ref.where(
                 'courseState', '==', courseState)
 
-        return self._collection_ref.stream()
+        for doc in self._collection_ref.stream():
+            yield Course.from_dict(doc.to_dict())
 
 
 def get_user():

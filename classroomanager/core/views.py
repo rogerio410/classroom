@@ -56,18 +56,15 @@ def sync_all_to_firestore():
         except Exception as e:
             flash(f'Erro ao sincronizar: {e}!')
 
-    return redirect(url_for('.disciplinas'))
+    return redirect(url_for('core.courses'))
 
 
-@core.route('/disciplinas')
+@core.route('/courses')
 @login_required
-def disciplinas():
+def courses():
     courses_repository = FirestoreRepository('courses')
-    lista = []
-    for doc in courses_repository.list():
-        lista.append(doc.to_dict())
-
-    return render_template('disciplinas.html', disciplinas=lista)
+    courses = courses_repository.list()
+    return render_template('courses.html', courses=courses)
 
 
 @core.route('/disciplina', methods=['POST', 'GET'])

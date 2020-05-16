@@ -19,16 +19,16 @@
             </tr>
         </thead>
         <tbody>
-            {% for disciplina in disciplinas %}
+            {% for c in courses %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td>{{ disciplina.name }} </td>
-                    <td>{{ disciplina.section }} </td>
-                    <td>{{ disciplina.room }} </td>
-                    <td>{{ disciplina.enrollmentCode }}</td>
-                    <td>{{disciplina.courseState}}</td>
+                    <td>{{ c.name }} </td>
+                    <td>{{ c.section }} </td>
+                    <td>{{ c.room }} </td>
+                    <td>{{ c.enrollmentCode }}</td>
+                    <td>{{ c.courseState }}</td>
                     <td>
-                        <a href="{{ disciplina.alternateLink }}" target="_blank"><img src="{{ url_for('core.static', filename='classroom.png') }}" alt="Classroom icon" title="View on Classroom" width="24px"></a>
+                        <a href="{{ c.alternateLink }}" target="_blank"><img src="{{ url_for('core.static', filename='classroom.png') }}" alt="Classroom icon" title="View on Classroom" width="24px"></a>
                     </td>
                 </tr>
             {% endfor %}
