@@ -3,6 +3,7 @@ from .classroom_utils import get_classroom_service, CourseState
 from .firestore_utils import get_firestore_client, get_firestore_timestamp
 from classroomanager.auth.login_utils import login_required, is_loggedin
 from .models import Course
+from classroomanager.repository import FirestoreRepository
 from googleapiclient import errors, http
 import simplejson
 from .classroom_operacoes import *
@@ -61,19 +62,9 @@ def sync_all_to_firestore():
 @core.route('/disciplinas')
 @login_required
 def disciplinas():
-
-    # TODO: create a Repository to encapsulate query like this
-    profile_email = session.get('profile').get('email')
-    courses_ref = firestore.collection('courses')
-
-    courses_ref = courses_ref.where('user', '==', profile_email)
-    courses_ref = courses_ref.where(
-        'courseState', '==', CourseState.ACTIVE.value)
-
-    docs = courses_ref.stream()
-
+    courses_repository = FirestoreRepository('courses')
     lista = []
-    for doc in docs:
+    for doc in courses_repository.list():
         lista.append(doc.to_dict())
 
     return render_template('disciplinas.html', disciplinas=lista)
