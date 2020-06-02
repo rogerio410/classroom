@@ -1,3 +1,4 @@
+import datetime
 
 
 class Course(object):
@@ -17,7 +18,8 @@ class Course(object):
         self.ownerId = ownerId
         self.courseState = courseState
         self.creationTime = creationTime
-        self.updateTime = updateTime
+        self.updateTime = datetime.datetime.strptime(
+            updateTime, '%Y-%m-%dT%H:%M:%S.%fz')
         self.alternateLink = alternateLink
 
     @staticmethod

@@ -8,36 +8,23 @@
         <a href="{{ url_for('core.sync_all_to_firestore') }}" type="button" class="btn btn-outline-success"><i class="fa fa-refresh" aria-hidden="true"></i> Sync Courses</a>
     </div>
 
-    <table class="table">
-        <thead class="thead-light">
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Name</th>
-                <th scope="col">Section</th>
-                <th scope="col">Room</th>
-                <th scope="col">Code</th>
-                <th scope="col">Status</th>
-                <th scope="col">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for c in courses %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ c.name }} </td>
-                    <td>{{ c.section }} </td>
-                    <td>{{ c.room }} </td>
-                    <td>{{ c.enrollmentCode }}</td>
-                    <td>{{ c.courseState }}</td>
-                    <td>
-                        <a href="{{ url_for('core.course', id=c.id) }}">Ver</a>
-                        <a href="{{ c.alternateLink }}" target="_blank"><img src="{{ url_for('core.static', filename='classroom.png') }}" alt="Classroom icon" title="View on Classroom" width="24px"></a>
-                        <p> {{ c.updateTime }}</p>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="courses">
+        {% for c in courses %}
+        <div class="course">
+            <p class="course__attribute">[{{ loop.index }}] <strong>{{ c.name }} </strong></p>
+            <p class="course__attribute">{{ c.section | default('-', true) }}</p>
+            <p class="course__attribute">{{ c.courseState }}: {{ c.enrollmentCode }}</p>
+            <small><i class="fa fa-refresh"></i> {{ c.updateTime.strftime('%d/%m/%Y - %H:%M') }} </small>
+
+            <div class="course-actions">
+                <a href="{{ url_for('core.course', id=c.id) }}">Ver</a>
+                <a href="{{ c.alternateLink }}" target="_blank"><img src="{{ url_for('core.static', filename='classroom.png') }}" alt="Classroom icon" title="View on Classroom" width="24px"></a>
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
         
 {% endblock %}
 

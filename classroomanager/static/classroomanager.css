@@ -61,12 +61,42 @@ header a:hover {
     border: 1px solid lightgray;
 }
 
+.courses {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+.course {
+    background: whitesmoke;
+    border: 1px solid teal;
+    border-radius: 6px;
+    padding: 6px;
+}
+
+.course__attribute {
+    font-size: 12px;
+}
+
+.course-actions {
+    position: relative;
+}
+
+.course-actions::before {
+    height: 1px;
+    background: gray;
+    content: ' ';
+    display: block;
+}
+
 .content__actions {
     margin-bottom: 10px;
+    padding-bottom: 10px;
     display: grid;
-    column-gap: 10px;
+    gap: 10px;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     /* grid-auto-flow: column; */
+    border-bottom: 1px solid teal;
 }
 
 footer {
