@@ -3,6 +3,7 @@ from .core.firestore_utils import get_firestore_client, get_firestore_timestamp
 from .core.classroom_operacoes import CourseState
 from .core.models import Course
 import flask
+import google
 
 
 class AbstractRepository(ABC):
@@ -22,25 +23,35 @@ class AbstractRepository(ABC):
 
 class FirestoreRepository(AbstractRepository):
 
-    def __init__(self, collection_name):
+    def __init__(self, collection_name, model):
+        self._Model = model
         self._collection_name = collection_name
         self._collection_ref = get_firestore_client().collection(
-            self._collection_name).where('user', '==', get_user())
+            self._collection_name).where('user', '==', get_user_email())
 
-    def get(self):
-        pass
+    def get(self, id):
+        course_id = f'{id}-{get_user_email()}'
+
+        doc = get_firestore_client().collection(
+            self._collection_name).document(course_id).get()
+
+        if not doc.to_dict() or doc.to_dict()['user'] != get_user_email():
+            raise google.cloud.exceptions.NotFound('Doc not found!')
+
+        return self._Model.from_dict(doc.to_dict())
 
     def save(self, entity):
         pass
 
     def list(self, courseState=CourseState.ACTIVE.value):
         if courseState:
+            # TODO: this is specific
             self._collection_ref = self._collection_ref.where(
                 'courseState', '==', courseState)
 
         for doc in self._collection_ref.stream():
-            yield Course.from_dict(doc.to_dict())
+            yield self._Model.from_dict(doc.to_dict())
 
 
-def get_user():
+def get_user_email():
     return flask.session.get('profile').get('email')

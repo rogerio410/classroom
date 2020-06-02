@@ -5,6 +5,7 @@ from classroomanager.auth.login_utils import login_required, is_loggedin
 from .models import Course
 from classroomanager.repository import FirestoreRepository
 from googleapiclient import errors, http
+import google
 import simplejson
 from .classroom_operacoes import *
 from flask import (render_template, request,
@@ -46,6 +47,7 @@ def sync_all_to_firestore():
             id = f"{disc['id']}-{profile_email}"
             disc['user'] = profile_email
             disc['timestamp'] = get_firestore_timestamp()
+            disc['courseId'] = disc['id']
 
             ref = firestore.collection('courses').document(id)
             batch.set(ref, disc)
@@ -62,14 +64,26 @@ def sync_all_to_firestore():
 @core.route('/courses')
 @login_required
 def courses():
-    courses_repository = FirestoreRepository('courses')
+    courses_repository = FirestoreRepository('courses', Course)
     courses = courses_repository.list()
     return render_template('courses.html', courses=courses)
 
 
-@core.route('/disciplina', methods=['POST', 'GET'])
+@core.route('/course/<int:id>')
+def course(id):
+    courses_repository = FirestoreRepository('courses', Course)
+    try:
+        course = courses_repository.get(id)
+    except google.cloud.exceptions.NotFound as e:
+        flash('Course not found!')
+        return redirect(url_for('index'))
+
+    return jsonify(course.to_dict())
+
+
+@core.route('/form_disciplina', methods=['POST', 'GET'])
 @login_required
-def disciplina():
+def form_disciplina():
 
     if request.method == 'GET':
         return render_template('form_disciplina.html')
