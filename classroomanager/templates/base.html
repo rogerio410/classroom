@@ -2,8 +2,11 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='classroom.png') }}" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='classroomanager.css') }}">
     <title>
         {% block title %}
             Classroom Manager
@@ -15,24 +18,42 @@
     <div class="container-fluid">
         <header>
             <h1>Classroom Manager</h1>
-            {% if session.profile %}
-                    <p>
-                        <img src="{{ session.profile.picture }}" class="rounded-circle" alt="profile image" width="25px"> 
-                        {{ session.profile.name }} <a href="{{ url_for('auth.logout') }}">Logout</a><br>
-                        {{ session.profile.email }}
-                    </p>
-            {% endif %}
+
+            <div class="header__user-box">
+                {% if session.profile %}
+                        <p>
+                            <img src="{{ session.profile.picture }}" class="rounded-circle" alt="profile image" width="25px"> 
+                            {{ session.profile.name }} 
+                        </p>
+                        <p>
+                            {{ session.profile.email }} <a href="{{ url_for('auth.logout') }}">Logout</a>
+                        </p>
+                {% else %}
+                        <p>Entre com sua conta Google</p>
+                {% endif %}
+            </div>
         </header>
         
+        <div>
         {% for msg in get_flashed_messages() %}
-            <div class="alert alert-primary">
+            <div class="alert alert-primary alert-dismissible fade show" role="alert">
                 {{ msg|e }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
             </div>
         {% endfor %}
+        </div>
         
-        {% block content %}
-            <p>Conteúdo Principal</p>
-        {% endblock %}
+        <div class="content">
+            {% block content %}
+                <p>Conteúdo Principal</p>
+            {% endblock %}
+        </div>
+
+        <footer>
+            Classroom Manager
+        </footer>
 
     </div>
     

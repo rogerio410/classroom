@@ -3,7 +3,9 @@ from .classroom_utils import get_classroom_service, CourseState
 from .firestore_utils import get_firestore_client, get_firestore_timestamp
 from classroomanager.auth.login_utils import login_required, is_loggedin
 from .models import Course
+from classroomanager.repository import FirestoreRepository
 from googleapiclient import errors, http
+import google
 import simplejson
 from .classroom_operacoes import *
 from flask import (render_template, request,
@@ -45,6 +47,7 @@ def sync_all_to_firestore():
             id = f"{disc['id']}-{profile_email}"
             disc['user'] = profile_email
             disc['timestamp'] = get_firestore_timestamp()
+            disc['courseId'] = disc['id']
 
             ref = firestore.collection('courses').document(id)
             batch.set(ref, disc)
@@ -55,33 +58,32 @@ def sync_all_to_firestore():
         except Exception as e:
             flash(f'Erro ao sincronizar: {e}!')
 
-    return redirect(url_for('.disciplinas'))
+    return redirect(url_for('core.courses'))
 
 
-@core.route('/disciplinas')
+@core.route('/courses')
 @login_required
-def disciplinas():
-
-    # TODO: create a Repository to encapsulate query like this
-    profile_email = session.get('profile').get('email')
-    courses_ref = firestore.collection('courses')
-
-    courses_ref = courses_ref.where('user', '==', profile_email)
-    courses_ref = courses_ref.where(
-        'courseState', '==', CourseState.ACTIVE.value)
-
-    docs = courses_ref.stream()
-
-    lista = []
-    for doc in docs:
-        lista.append(doc.to_dict())
-
-    return render_template('disciplinas.html', disciplinas=lista)
+def courses():
+    courses_repository = FirestoreRepository('courses', Course)
+    courses = courses_repository.list()
+    return render_template('courses.html', courses=courses)
 
 
-@core.route('/disciplina', methods=['POST', 'GET'])
+@core.route('/course/<int:id>')
+def course(id):
+    courses_repository = FirestoreRepository('courses', Course)
+    try:
+        course = courses_repository.get(id)
+    except google.cloud.exceptions.NotFound as e:
+        flash('Course not found!')
+        return redirect(url_for('index'))
+
+    return jsonify(course.to_dict())
+
+
+@core.route('/form_disciplina', methods=['POST', 'GET'])
 @login_required
-def disciplina():
+def form_disciplina():
 
     if request.method == 'GET':
         return render_template('form_disciplina.html')
