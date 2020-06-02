@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-    <form action="{{ url_for('core.disciplina') }}" method="post">
+    <form action="{{ url_for('core.form_disciplina') }}" method="post">
         <div class="form-group">
             <label for="nome">Nome: </label>
             <input class="form-control" type="text" name="nome" required/>
@@ -32,12 +32,16 @@
             <input class="form-control" type="text" name="ano_semestre" placeholder="2020 ou 2020.1" required/>
         </div>
 
-        <input class="btn btn-info" type="submit" value="Criar Turma Classroom" >
         
-        <a class="btn btn-light" href="{{ url_for('core.courses') }}">Lista de Disciplinas</a>
-        <a class="btn btn-light" href="{{ url_for('core.disciplinas_lote') }}">Criar em Lote</a>
+        
+        <div class="content__actions">
+            <input class="btn btn-info" type="submit" value="Criar Turma" >
+            <a class="btn btn-light" href="{{ url_for('core.courses') }}">Disciplinas</a>
+            <a class="btn btn-light" href="{{ url_for('core.disciplinas_lote') }}">Criar em Lote</a>
+        </div>
         
     </form>
+
 {% endblock %}
 
 

@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div>
+    <div class="content__actions">
         <a href="{{ url_for('core.form_disciplina') }}" class="btn btn-outline-primary">Nova Disciplina</a>
         <a href="{{ url_for('core.disciplinas_lote') }}" class="btn btn-outline-secondary">Criar em Lote</a>
         <a href="{{ url_for('core.sync_all_to_firestore') }}" type="button" class="btn btn-outline-success">Sync Courses</a>
     </div>
+
     <table class="table">
         <thead class="thead-light">
             <tr>
