@@ -9,6 +9,13 @@ import googleapiclient
 
 CLIENT_SECRETS_FILE = 'credentials_webserver.json'
 # https://developers.google.com/identity/protocols/oauth2/scopes
+# SCOPES = ['https://www.googleapis.com/auth/classroom.courses',
+#           'https://www.googleapis.com/auth/classroom.coursework.students',
+#           'https://www.googleapis.com/auth/classroom.rosters',
+#           'https://www.googleapis.com/auth/classroom.profile.emails',
+#           'https://www.googleapis.com/auth/classroom.profile.photos'
+#           ]
+
 SCOPES = [
     'https://www.googleapis.com/auth/classroom.courses.readonly',
     'https://www.googleapis.com/auth/userinfo.email',

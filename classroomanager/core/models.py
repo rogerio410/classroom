@@ -18,15 +18,20 @@ class Course(object):
         self.ownerId = ownerId
         self.courseState = courseState
         self.creationTime = creationTime
-        self.updateTime = datetime.datetime.strptime(
-            updateTime, '%Y-%m-%dT%H:%M:%S.%fz')
+        try:
+            self.updateTime = datetime.datetime.strptime(
+                updateTime, '%Y-%m-%dT%H:%M:%S.%fz')
+        except:
+            self.updateTime = datetime.datetime.strptime(
+                updateTime, '%Y-%m-%dT%H:%M:%SZ')
+
         self.alternateLink = alternateLink
 
     @staticmethod
     def from_dict(course_dict):
         c = Course(course_dict['id'],
                    course_dict['name'],
-                   course_dict['enrollmentCode'],
+                   course_dict.get('enrollmentCode') or '',
                    course_dict.get('section') or '',
                    course_dict.get('room') or '',
                    course_dict.get('description') or '',

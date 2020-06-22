@@ -14,6 +14,7 @@
             <p class="course__attribute">[{{ loop.index }}] <strong>{{ c.name }} </strong></p>
             <p class="course__attribute">{{ c.section | default('-', true) }}</p>
             <p class="course__attribute">{{ c.courseState }}: {{ c.enrollmentCode }}</p>
+            <!-- <small><i class="fa fa-refresh"></i> {{ c.updateTime.strftime('%d/%m/%Y - %H:%M') }} </small> -->
 
             <div class="course-actions">
                 <a href="{{ url_for('core.course', id=c.id) }}">Ver</a>

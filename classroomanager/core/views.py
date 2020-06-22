@@ -66,6 +66,11 @@ def sync_all_to_firestore():
 def courses():
     courses_repository = FirestoreRepository('courses', Course)
     courses = courses_repository.list()
+
+    # Temp:
+    # courses = obter_disciplinas(get_classroom_service())
+    # courses = filter(lambda x: 'CADIR' in (x.get('section') or ''), courses)
+
     return render_template('courses.html', courses=courses)
 
 
@@ -118,12 +123,12 @@ def disciplinas_lote():
             disciplinas_criadas = []
             disciplinas_nao_criadas = []
             criar_disciplinas_lote_one_by_one(
-                service, disciplinas, disciplinas_criadas,
+                get_classroom_service(), disciplinas, disciplinas_criadas,
                 disciplinas_nao_criadas)
         except Exception as e:
             print('Exception:', e)
             flash(f"Não foi possível criar as disciplinas")
-            return redirect('/disciplinas')
+            return redirect(url_for('core.courses'))
 
         qtd = len(disciplinas_criadas)
         salvar_em_arquivo(disciplinas_criadas)
@@ -133,17 +138,17 @@ def disciplinas_lote():
             salvar_em_arquivo_nao_criadas(disciplinas_nao_criadas)
             flash(f'ATENÇÃO: Algumas disciplinas não foram criadas!')
 
-        return redirect(url_for('index'))
+        return redirect(url_for('core.courses'))
 
 
 @core.route('/disciplina/<int:id>/arquivar')
 @login_required
 def arquivar_disciplina_req(id):
-    if arquivar_disciplina(service, id):
+    if arquivar_disciplina(get_classroom_service(), id):
         flash('Disciplina arquivada com sucesso!')
     else:
         flash('Não foi possível arquivar!')
-    return redirect(url_for('index'))
+    return redirect(url_for('core.courses'))
 
 
 @core.route('/disciplina/<int:id>/associar_professor/<email>')

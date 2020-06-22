@@ -4,6 +4,7 @@ from .core.classroom_operacoes import CourseState
 from .core.models import Course
 import flask
 import google
+from firebase_admin import firestore
 
 
 class AbstractRepository(ABC):
@@ -23,11 +24,14 @@ class AbstractRepository(ABC):
 
 class FirestoreRepository(AbstractRepository):
 
-    def __init__(self, collection_name, model):
+    def __init__(self, collection_name, model, limit=100):
         self._Model = model
         self._collection_name = collection_name
-        self._collection_ref = get_firestore_client().collection(
-            self._collection_name).where('user', '==', get_user_email())
+        self._collection_ref = get_firestore_client()\
+            .collection(self._collection_name)\
+            .where('user', '==', get_user_email())\
+            .order_by('updateTime', direction=firestore.Query.DESCENDING).order_by('section')\
+            .limit(limit)
 
     def get(self, id):
         course_id = f'{id}-{get_user_email()}'
@@ -43,7 +47,11 @@ class FirestoreRepository(AbstractRepository):
     def save(self, entity):
         pass
 
-    def list(self, courseState=CourseState.ACTIVE.value):
+    def list(self, courseState=CourseState.ACTIVE.value, limit=None):
+
+        if limit:
+            self._collection_ref = self._collection_ref.limit(limit)
+
         if courseState:
             # TODO: this is specific
             self._collection_ref = self._collection_ref.where(
