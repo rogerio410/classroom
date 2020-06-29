@@ -64,12 +64,12 @@ def sync_all_to_firestore():
 @core.route('/courses')
 @login_required
 def courses():
-    courses_repository = FirestoreRepository('courses', Course)
-    courses = courses_repository.list()
+    # courses_repository = FirestoreRepository('courses', Course)
+    # courses = courses_repository.list()
 
     # Temp:
-    # courses = obter_disciplinas(get_classroom_service())
-    # courses = filter(lambda x: 'CADIR' in (x.get('section') or ''), courses)
+    courses = obter_disciplinas(get_classroom_service())
+    courses = filter(lambda x: 'CACAM' in (x.get('section') or ''), courses)
 
     return render_template('courses.html', courses=courses)
 
