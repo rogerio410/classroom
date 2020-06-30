@@ -108,7 +108,7 @@ def disciplinas_lote():
             disciplinas_criadas = []
             disciplinas_nao_criadas = []
             criar_disciplinas_lote_one_by_one(
-                get_classroom_service(), disciplinas, CourseState.PROVISIONED, disciplinas_criadas,
+                get_classroom_service(), disciplinas, CourseState.ACTIVE, disciplinas_criadas,
                 disciplinas_nao_criadas)
         except Exception as e:
             print('Exception:', e)
