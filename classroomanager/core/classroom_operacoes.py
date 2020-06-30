@@ -44,7 +44,8 @@ def obter_disciplinas(service, professor='me'):
             response = service.courses().list(pageToken=page_token,
                                               pageSize=500,
                                               courseStates=[
-                                                  CourseState.ACTIVE.value, ],
+                                                  CourseState.ACTIVE.value,
+                                                  CourseState.PROVISIONED.value],
                                               # teacherId=professor
                                               ).execute()
         except errors.HttpError as e:
@@ -69,7 +70,7 @@ def criar_disciplina_com_objeto(service, course):
     return course
 
 
-def criar_disciplinas_lote_one_by_one(service, disciplinas,
+def criar_disciplinas_lote_one_by_one(service, disciplinas, course_state,
                                       disciplinas_criadas,
                                       disciplinas_nao_criadas):
 
@@ -84,7 +85,7 @@ def criar_disciplinas_lote_one_by_one(service, disciplinas,
             # 'ownerId': 'me',
             # 'ownerId': 'emailinexistente.ok@ifpi.edu.br',
             'ownerId': professor,
-            'courseState': 'ACTIVE'
+            'courseState': course_state.value
         }
 
         try:

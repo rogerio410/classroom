@@ -10,6 +10,11 @@ app = Flask(__name__)
 
 app.secret_key = 'AS<MNAS$##$#)---'
 
+# To run:
+# export FLASK_APP=classroomanager
+# export FLASK_ENV=development
+# flask run
+
 
 def setup():
 

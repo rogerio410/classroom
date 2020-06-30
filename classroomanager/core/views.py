@@ -1,6 +1,7 @@
+import itertools
 from datetime import datetime
 from .classroom_utils import get_classroom_service, CourseState
-from .firestore_utils import get_firestore_client, get_firestore_timestamp
+from .firestore_utils import get_firestore_client, get_firestore_timestamp, save_batch
 from classroomanager.auth.login_utils import login_required, is_loggedin
 from .models import Course
 from classroomanager.repository import FirestoreRepository
@@ -26,37 +27,21 @@ firestore = get_firestore_client()
 @login_required
 def sync_all_to_firestore():
     """
-        Data model: 
+        Data model:
         * classroom object + user(profile_email) + timestamp
         * id on firestore is classroom_id-profile_email
     """
     profile_email = session.get('profile').get('email')
     disciplinas = obter_disciplinas(get_classroom_service())
-
-    # limite de 500 por request - timestamp, increment and ArrayUnion is like 1
-    PER_REQUEST = 250
-    batch_slots = len(disciplinas) // PER_REQUEST
-    if len(disciplinas) % PER_REQUEST > 0:
-        batch_slots += 1
-
-    for i in range(batch_slots):
-        batch = firestore.batch()
-        start = i * PER_REQUEST
-        end = start + PER_REQUEST
-        for disc in disciplinas[start:end]:
-            id = f"{disc['id']}-{profile_email}"
-            disc['user'] = profile_email
-            disc['timestamp'] = get_firestore_timestamp()
-            disc['courseId'] = disc['id']
-
-            ref = firestore.collection('courses').document(id)
-            batch.set(ref, disc)
-
-        try:
-            batch.commit()
-            flash(f'{len(disciplinas)} Courses synchronized successfully!')
-        except Exception as e:
-            flash(f'Erro ao sincronizar: {e}!')
+    errors = []
+    try:
+        save_batch(disciplinas, errors, profile_email)
+        flash(f'{len(disciplinas)-len(errors)} Courses synchronized successfully!')
+        if errors:
+            flash(f'{len(errors)} Courses NOT synchronized!')
+    except Exception as e:
+        print(e)
+        flash(f'Fail to sync courses.')
 
     return redirect(url_for('core.courses'))
 
@@ -64,12 +49,12 @@ def sync_all_to_firestore():
 @core.route('/courses')
 @login_required
 def courses():
-    # courses_repository = FirestoreRepository('courses', Course)
-    # courses = courses_repository.list()
+    courses_repository = FirestoreRepository('courses', Course)
+    courses = courses_repository.list()
 
     # Temp:
-    courses = obter_disciplinas(get_classroom_service())
-    courses = filter(lambda x: 'CACAM' in (x.get('section') or ''), courses)
+    # courses = obter_disciplinas(get_classroom_service())
+    # courses = filter(lambda x: 'CACAM' in (x.get('section') or ''), courses)
 
     return render_template('courses.html', courses=courses)
 
@@ -123,7 +108,7 @@ def disciplinas_lote():
             disciplinas_criadas = []
             disciplinas_nao_criadas = []
             criar_disciplinas_lote_one_by_one(
-                get_classroom_service(), disciplinas, disciplinas_criadas,
+                get_classroom_service(), disciplinas, CourseState.PROVISIONED, disciplinas_criadas,
                 disciplinas_nao_criadas)
         except Exception as e:
             print('Exception:', e)
@@ -131,12 +116,31 @@ def disciplinas_lote():
             return redirect(url_for('core.courses'))
 
         qtd = len(disciplinas_criadas)
+
+        # Log created courses
         salvar_em_arquivo(disciplinas_criadas)
         flash(f'Disciplinas Criadas ({qtd}) em lote!!!')
 
+        # Save to Cache BD
+        errors = []
+        try:
+            profile_email = session.get('profile').get('email')
+            save_batch(disciplinas_criadas, errors, profile_email)
+            flash(
+                f'{len(disciplinas_criadas)-len(errors)} Courses synchronized successfully!')
+            if errors:
+                flash(f'{len(errors)} Courses NOT synchronized!')
+        except Exception as e:
+            print(e)
+            flash(f'Fail to sync courses.')
+
+        # Log not created courses
         if disciplinas_nao_criadas:
             salvar_em_arquivo_nao_criadas(disciplinas_nao_criadas)
+            error_msgs = ''.join(set([d['error']
+                                      for d in disciplinas_nao_criadas]))
             flash(f'ATENÇÃO: Algumas disciplinas não foram criadas!')
+            flash(f'errors: {error_msgs}')
 
         return redirect(url_for('core.courses'))
 

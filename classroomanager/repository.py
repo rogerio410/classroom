@@ -47,18 +47,19 @@ class FirestoreRepository(AbstractRepository):
     def save(self, entity):
         pass
 
-    def list(self, courseState=CourseState.ACTIVE.value, limit=None):
+    def list(self, courseStates=[CourseState.ACTIVE.value, CourseState.PROVISIONED.value, ], limit=None):
+        collection_ref = self._collection_ref
 
         if limit:
-            self._collection_ref = self._collection_ref.limit(limit)
+            collection_ref = collection_ref.limit(limit)
 
-        if courseState:
-            # TODO: this is specific
-            self._collection_ref = self._collection_ref.where(
-                'courseState', '==', courseState)
+        if courseStates:
+            for cs in courseStates:
+                collection_ref_cs = collection_ref.where(
+                    'courseState', '==', cs)
 
-        for doc in self._collection_ref.stream():
-            yield self._Model.from_dict(doc.to_dict())
+                for doc in collection_ref_cs.stream():
+                    yield self._Model.from_dict(doc.to_dict())
 
 
 def get_user_email():
