@@ -52,9 +52,17 @@ def courses():
     courses_repository = FirestoreRepository('courses', Course)
     courses = courses_repository.list()
 
+    # Query parameters
+    section = request.args.get('section') or None
+    name = request.args.get('name') or None
+
     # Temp:
     # courses = obter_disciplinas(get_classroom_service())
-    # courses = filter(lambda x: 'CACAM' in (x.get('section') or ''), courses)
+    if section:
+        courses = filter(lambda c: section in c.section, courses)
+
+    if name:
+        courses = filter(lambda c: name in c.name, courses)
 
     return render_template('courses.html', courses=courses)
 
@@ -108,7 +116,7 @@ def disciplinas_lote():
             disciplinas_criadas = []
             disciplinas_nao_criadas = []
             criar_disciplinas_lote_one_by_one(
-                get_classroom_service(), disciplinas, CourseState.ACTIVE, disciplinas_criadas,
+                get_classroom_service(), disciplinas, CourseState.PROVISIONED, disciplinas_criadas,
                 disciplinas_nao_criadas)
         except Exception as e:
             print('Exception:', e)
@@ -118,21 +126,22 @@ def disciplinas_lote():
         qtd = len(disciplinas_criadas)
 
         # Log created courses
-        salvar_em_arquivo(disciplinas_criadas)
-        flash(f'Disciplinas Criadas ({qtd}) em lote!!!')
+        if disciplinas_criadas:
+            salvar_em_arquivo(disciplinas_criadas)
+            flash(f'Disciplinas Criadas ({qtd}) em lote!!!')
 
-        # Save to Cache BD
-        errors = []
-        try:
-            profile_email = session.get('profile').get('email')
-            save_batch(disciplinas_criadas, errors, profile_email)
-            flash(
-                f'{len(disciplinas_criadas)-len(errors)} Courses synchronized successfully!')
-            if errors:
-                flash(f'{len(errors)} Courses NOT synchronized!')
-        except Exception as e:
-            print(e)
-            flash(f'Fail to sync courses.')
+            # Save to Cache BD
+            errors = []
+            try:
+                profile_email = session.get('profile').get('email')
+                save_batch(disciplinas_criadas, errors, profile_email)
+                flash(
+                    f'{len(disciplinas_criadas)-len(errors)} Courses synchronized successfully!')
+                if errors:
+                    flash(f'{len(errors)} Courses NOT synchronized!')
+            except Exception as e:
+                print(e)
+                flash(f'Fail to sync courses.')
 
         # Log not created courses
         if disciplinas_nao_criadas:
