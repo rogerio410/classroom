@@ -106,6 +106,14 @@ header a:hover {
     border-bottom: 1px solid teal;
 }
 
+.filter{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
 footer {
     padding: 10px;
     background: rgb(14, 155, 155);

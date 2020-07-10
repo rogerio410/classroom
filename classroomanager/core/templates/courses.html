@@ -6,13 +6,13 @@
         <a href="{{ url_for('core.form_disciplina') }}" class="btn btn-outline-primary"><i class="fa fa-pencil"></i> Nova Disciplina</a>
         <a href="{{ url_for('core.disciplinas_lote') }}" class="btn btn-outline-secondary"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Criar em Lote</a>
         <a href="{{ url_for('core.sync_all_to_firestore') }}" type="button" class="btn btn-outline-success"><i class="fa fa-refresh" aria-hidden="true"></i> Sync Courses</a>
-        <form action="">
-            <input name="name" placeholder="name: ex.: Algoritmos">
-            <input name="section" placeholder="section: ex.: CATCE">
-            <input type="submit" style="position: absolute; left: -9999px"/>
-        </form>
-        
     </div>
+    <form class="filter" action="">
+        <input name="name" placeholder="name: ex.: Algoritmos">
+        <input name="section" placeholder="section: ex.: CATCE">
+        <input type="submit" value="Filter" class="btn btn-secondary"/>
+    </form>
+    
 
     <div class="courses">
         {% for c in courses %}
